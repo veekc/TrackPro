@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackPro - Project Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        /* Keyframe animations for "fancy" design */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.6s ease-out forwards;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        .button-fancy {
+            background-image: linear-gradient(to right, #6366F1, #8B5CF6); /* Purple gradient */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            color: white;
+            transition: all 0.3s ease-in-out;
+        }
+        .button-fancy:hover {
+            background-image: linear-gradient(to right, #4F46E5, #7C3AED);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .button-fancy:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Import React hooks from the global React object
+        const { useState, useEffect, useRef } = React;
+
+        // --- LOGIN COMPONENT ---
+        const LoginScreen = ({ onLoginSuccess }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+
+            // Hardcoded credentials (VERY INSECURE for real applications)
+            const CORRECT_USERNAME = 'user';
+            const CORRECT_PASSWORD = '1234'; // Change this to your desired password
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+                    onLoginSuccess();
+                } else {
+                    setError('Invalid username or password');
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 p-4">
+                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md animate-fade-in-down">
+                        <h2 className="text-4xl font-extrabold text-center text-purple-800 mb-6">TrackPro Login</h2>
+                        <form onSubmit={handleLogin}>
+                            <div className="mb-4">
+                                <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+                                <input
+                                    type="text"
+                                    id="username"
+                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-6">
+                                <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            {error && (
+                                <p className="text-red-500 text-xs italic mb-4 text-center">{error}</p>
+                            )}
+                            <div className="flex items-center justify-center">
+                                <button
+                                    type="submit"
+                                    className="button-fancy font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg"
+                                >
+                                    Sign In
+                                </button>
+                            </div>
+                        </form>
+                        <p className="text-center text-sm text-gray-500 mt-6">
+                            Hint: Ask Bhaskar KC
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+        // --- END LOGIN COMPONENT ---
+
+
+        // Helper function to format date for datetime-local input
+        const formatDateTimeLocal = (date) => {
+            if (!date) return '';
+            try {
+                const d = new Date(date);
+                if (isNaN(d.getTime())) return '';
+                return d.toISOString().slice(0, 16);
+            } catch (e) {
+                console.error("Error formatting date:", e);
+                return '';
+            }
+        };
+
+        // Project Progress Meter component
+        const ProjectProgressMeter = ({ completedTasks, totalTasks, startDate, endDate }) => {
+            const getTimeProgress = () => {
+                if (!startDate || !endDate) return 0;
+                const now = new Date();
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                if (now < start) return 0;
+                if (now > end) return 100;
+                const elapsed = now - start;
+                const total = end - start;
+                return Math.round((elapsed / total) * 100);
+            };
+
+            const percentTasks = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+            const percentTime = getTimeProgress();
+
+            const status = (!startDate || !endDate)
+                ? "Dates Not Set"
+                : (percentTime >= 100 ? "Deadline Passed" : "In Progress");
+
+            return (
+                <div className="border border-gray-300 p-4 rounded-lg mb-4 bg-gray-50">
+                    <h3 className="font-semibold text-lg text-gray-700 mb-2">📊 Project Progress</h3>
+                    <p className="text-sm text-gray-600 mb-1">Tasks: {completedTasks} / {totalTasks} ({percentTasks}%)</p>
+                    <div className="bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
+                        <div style={{ width: `${percentTasks}%` }} className="bg-green-500 h-full"></div>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">Time Elapsed: {percentTime}%</p>
+                    <div className="bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div style={{ width: `${percentTime}%` }} className="bg-blue-500 h-full"></div>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-2">Status: <strong className="font-bold">{status}</strong></p>
+                </div>
+            );
+        };
+
+        // Recursive Job component for sub-jobs
+        const Job = ({ job, projectId, parentJobId, level, updateJob, deleteJob, moveJobUp, moveJobDown, isFirst, isLast }) => {
+            const [isEditing, setIsEditing] = useState(false);
+            const [editedName, setEditedName] = useState(job.name);
+            const [editedTimeframe, setEditedTimeframe] = useState(job.timeframe);
+            const [editedDescription, setEditedDescription] = useState(job.description || '');
+            const [editedStartDate, setEditedStartDate] = useState(job.startDate || '');
+            const [editedEndDate, setEditedEndDate] = useState(job.endDate || '');
+            const [editedIsImportant, setEditedIsImportant] = useState(job.isImportant || false);
+
+            const nameInputRef = useRef(null);
+
+            useEffect(() => {
+                if (isEditing && nameInputRef.current) {
+                    nameInputRef.current.focus();
+                }
+            }, [isEditing]);
+
+            const handleSave = () => {
+                if (editedName.trim() === '') return;
+                updateJob(projectId, parentJobId, job.id, {
+                    name: editedName,
+                    timeframe: editedTimeframe,
+                    description: editedDescription,
+                    startDate: editedStartDate,
+                    endDate: editedEndDate,
+                    isImportant: editedIsImportant
+                });
+                setIsEditing(false);
+            };
+
+            const handleCheckboxChange = (e) => {
+                updateJob(projectId, parentJobId, job.id, { completed: e.target.checked });
+            };
+
+            const handleAddSubJob = () => {
+                const currentDateTime = new Date().toISOString().slice(0, 16);
+                const newSubJob = {
+                    id: crypto.randomUUID(),
+                    name: "New Sub-Job",
+                    timeframe: "Ongoing",
+                    description: "Description for this sub-job.",
+                    startDate: currentDateTime,
+                    endDate: '',
+                    completed: false,
+                    isImportant: false,
+                    subJobs: []
+                };
+                // When adding a sub-job, the parentJobId becomes the job.id, and we pass null for jobId
+                updateJob(projectId, job.id, null, newSubJob);
+            };
+
+            const calculateEndDate = (value, unit) => {
+                if (!editedStartDate) return;
+
+                const start = new Date(editedStartDate);
+                if (isNaN(start.getTime())) return;
+
+                let newEndDate = new Date(start);
+
+                const numValue = parseInt(value, 10);
+                if (isNaN(numValue)) return;
+
+                switch (unit) {
+                    case 'hours':
+                        newEndDate.setHours(newEndDate.getHours() + numValue);
+                        break;
+                    case 'days':
+                        newEndDate.setDate(newEndDate.getDate() + numValue);
+                        break;
+                    case 'weeks':
+                        newEndDate.setDate(newEndDate.getDate() + (numValue * 7));
+                        break;
+                    case 'months':
+                        newEndDate.setMonth(newEndDate.getMonth() + numValue);
+                        break;
+                    case 'years':
+                        newEndDate.setFullYear(newEndDate.getFullYear() + numValue);
+                        break;
+                    default:
+                        break;
+                }
+                setEditedEndDate(formatDateTimeLocal(newEndDate));
+            };
+
+            return (
+                <div
+                    className={`flex flex-col p-3 m-2 rounded-lg shadow-md transition-all duration-300 ${
+                        job.completed ? 'bg-gray-200 text-gray-500 line-through' : 'bg-white text-gray-800'
+                    }`}
+                    style={{ marginLeft: `${level * 20}px`, minWidth: '300px' }}
+                >
+                    <div className="flex items-center mb-2">
+                        <input
+                            type="checkbox"
+                            checked={job.completed}
+                            onChange={handleCheckboxChange}
+                            className="mr-2 h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        {isEditing ? (
+                            <input
+                                ref={nameInputRef}
+                                type="text"
+                                value={editedName}
+                                onChange={(e) => setEditedName(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                                className="flex-grow p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        ) : (
+                            <h4 className="font-semibold text-lg flex-grow cursor-pointer" onClick={() => setIsEditing(true)}>
+                                {job.name}
+                            </h4>
+                        )}
+                        <button
+                            onClick={handleAddSubJob}
+                            className="ml-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-md transform hover:scale-110"
+                            title="Add Sub-Job"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        </button>
+                        <button
+                            onClick={() => deleteJob(projectId, parentJobId, job.id)}
+                            className="ml-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md transform hover:scale-110"
+                            title="Delete Job"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                        {/* Move Up/Down Buttons */}
+                        <button
+                            onClick={() => moveJobUp(projectId, parentJobId, job.id)}
+                            disabled={isFirst}
+                            className={`ml-2 p-2 rounded-full shadow-md transform hover:scale-110 transition-colors ${isFirst ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            title="Move Job Up"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                        </button>
+                        <button
+                            onClick={() => moveJobDown(projectId, parentJobId, job.id)}
+                            disabled={isLast}
+                            className={`ml-2 p-2 rounded-full shadow-md transform hover:scale-110 transition-colors ${isLast ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            title="Move Job Down"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V6"></path></svg>
+                        </button>
+                    </div>
+
+                    {isEditing ? (
+                        <>
+                            <textarea
+                                value={editedDescription}
+                                onChange={(e) => setEditedDescription(e.target.value)}
+                                placeholder="Job Description"
+                                rows="2"
+                                className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                            <input
+                                type="text"
+                                value={editedTimeframe}
+                                onChange={(e) => setEditedTimeframe(e.target.value)}
+                                placeholder="Timeframe (e.g., Q1 2024)"
+                                className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                            <div className="flex items-center mb-2">
+                                <input
+                                    type="checkbox"
+                                    checked={editedIsImportant}
+                                    onChange={(e) => setEditedIsImportant(e.target.checked)}
+                                    className="mr-2 h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
+                                />
+                                <label className="text-sm text-gray-700 font-medium">Mark as Important</label>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                    Start:
+                                    <input
+                                        type="datetime-local"
+                                        value={formatDateTimeLocal(editedStartDate)}
+                                        onChange={(e) => setEditedStartDate(e.target.value)}
+                                        className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                    End:
+                                    <input
+                                        type="datetime-local"
+                                        value={formatDateTimeLocal(editedEndDate)}
+                                        onChange={(e) => setEditedEndDate(e.target.value)}
+                                        className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+                                    />
+                                </label>
+                                <div className="flex flex-row gap-1 items-center justify-end flex-wrap">
+                                    <input type="number" placeholder="H" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'hours')} />
+                                    <input type="number" placeholder="D" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'days')} />
+                                    <input type="number" placeholder="W" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'weeks')} />
+                                    <input type="number" placeholder="M" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'months')} />
+                                    <input type="number" placeholder="Y" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'years')} />
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleSave}
+                                className="mt-4 px-3 py-1 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md transform hover:scale-105 self-end"
+                            >
+                                Save
+                            </button>
+                        </>
+                    ) : (
+                        <div onClick={() => setIsEditing(true)} className="cursor-pointer">
+                            {job.description && <p className="text-sm text-gray-700 mb-1">{job.description}</p>}
+                            {job.timeframe && <p className="text-xs text-gray-600 mb-1">Timeframe: {job.timeframe}</p>}
+                            {(job.startDate || job.endDate) && (
+                                <p className="text-xs text-gray-600">
+                                    {job.startDate && `Start: ${new Date(job.startDate).toLocaleString()}`}
+                                    {job.startDate && job.endDate && ' | '}
+                                    {job.endDate && `End: ${new Date(job.endDate).toLocaleString()}`}
+                                </p>
+                            )}
+                            {job.isImportant && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">
+                                    Important
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    {job.subJobs && job.subJobs.length > 0 && (
+                        <div className="flex flex-col ml-4 mt-2 border-l-2 border-gray-300 pl-2">
+                            {job.subJobs.map((subJob, index) => (
+                                <Job
+                                    key={subJob.id}
+                                    job={subJob}
+                                    projectId={projectId}
+                                    parentJobId={job.id} // This job is the parent for its sub-jobs
+                                    level={level + 1}
+                                    updateJob={updateJob}
+                                    deleteJob={deleteJob}
+                                    moveJobUp={moveJobUp}
+                                    moveJobDown={moveJobDown}
+                                    isFirst={index === 0}
+                                    isLast={index === job.subJobs.length - 1}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Main Project component
+        const Project = ({ project, updateProject, deleteProject, updateJob, deleteJob, moveJobUp, moveJobDown }) => {
+            const [isEditing, setIsEditing] = useState(false);
+            const [isMinimized, setIsMinimized] = useState(true); // New state for minimizing
+            const [editedName, setEditedName] = useState(project.name);
+            const [editedDescription, setEditedDescription] = useState(project.description || '');
+            const [editedStartDate, setEditedStartDate] = useState(project.startDate || '');
+            const [editedEndDate, setEditedEndDate] = useState(project.endDate || '');
+            const [editedIsImportant, setEditedIsImportant] = useState(project.isImportant || false);
+
+            const nameInputRef = useRef(null);
+
+
+            useEffect(() => {
+                if (isEditing && nameInputRef.current) {
+                    nameInputRef.current.focus();
+                }
+            }, [isEditing]);
+
+            const handleSave = () => {
+                if (editedName.trim() === '') return;
+                updateProject(project.id, {
+                    name: editedName,
+                    description: editedDescription,
+                    startDate: editedStartDate,
+                    endDate: editedEndDate,
+                    isImportant: editedIsImportant
+                });
+                setIsEditing(false);
+            };
+
+            const handleAddJob = () => {
+                const currentDateTime = new Date().toISOString().slice(0, 16);
+                const newJob = {
+                    id: crypto.randomUUID(),
+                    name: "New Job",
+                    timeframe: "Ongoing",
+                    description: "Description for this job.",
+                    startDate: currentDateTime,
+                    endDate: '',
+                    completed: false,
+                    isImportant: false,
+                    subJobs: []
+                };
+                updateProject(project.id, { jobs: [...(project.jobs || []), newJob] });
+            };
+
+            const handleProjectCheckboxChange = (e) => {
+                updateProject(project.id, { completed: e.target.checked });
+            };
+
+            const calculateEndDate = (value, unit) => {
+                if (!editedStartDate) return;
+
+                const start = new Date(editedStartDate);
+                if (isNaN(start.getTime())) return;
+
+                let newEndDate = new Date(start);
+
+                const numValue = parseInt(value, 10);
+                if (isNaN(numValue)) return;
+
+                switch (unit) {
+                    case 'hours':
+                        newEndDate.setHours(newEndDate.getHours() + numValue);
+                        break;
+                    case 'days':
+                        newEndDate.setDate(newEndDate.getDate() + numValue);
+                        break;
+                    case 'weeks':
+                        newEndDate.setDate(newEndDate.getDate() + (numValue * 7));
+                        break;
+                    case 'months':
+                        newEndDate.setMonth(newEndDate.getMonth() + numValue);
+                        break;
+                    case 'years':
+                        newEndDate.setFullYear(newEndDate.getFullYear() + numValue);
+                        break;
+                    default:
+                        break;
+                }
+                setEditedEndDate(formatDateTimeLocal(newEndDate));
+            };
+
+            // Calculate completed and total tasks for the progress meter
+            const countTasks = (jobs) => {
+                let completed = 0;
+                let total = 0;
+                const traverse = (jobList) => {
+                    jobList.forEach(job => {
+                        total++;
+                        if (job.completed) {
+                            completed++;
+                        }
+                        if (job.subJobs && job.subJobs.length > 0) {
+                            traverse(job.subJobs);
+                        }
+                    });
+                };
+                traverse(jobs || []);
+                return { completed, total };
+            };
+
+            const { completed: projectCompletedTasks, total: projectTotalTasks } = countTasks(project.jobs);
+
+
+            return (
+                <div
+                    className={`flex flex-col p-4 m-4 rounded-xl shadow-lg transition-all duration-300 min-w-80 border-2 ${
+                        project.completed ? 'bg-indigo-100 border-indigo-300 text-gray-500' : 'bg-indigo-50 border-indigo-200 text-gray-800'
+                    }`}
+                >
+                    <div className="flex items-center mb-4">
+                        <input
+                            type="checkbox"
+                            checked={project.completed}
+                            onChange={handleProjectCheckboxChange}
+                            className="mr-3 h-6 w-6 text-indigo-600 rounded focus:ring-indigo-500"
+                        />
+                        {isEditing ? (
+                            <input
+                                ref={nameInputRef}
+                                type="text"
+                                value={editedName}
+                                onChange={(e) => setEditedName(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                                className="flex-grow text-2xl font-bold p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        ) : (
+                            <h3 className="text-2xl font-bold flex-grow cursor-pointer" onClick={() => setIsEditing(true)}>
+                                {project.name}
+                            </h3>
+                        )}
+                        <button
+                            onClick={() => setIsMinimized(!isMinimized)}
+                            className="ml-3 p-2 bg-gray-300 text-gray-800 rounded-full hover:bg-gray-400 transition-colors shadow-md transform hover:scale-110"
+                            title={isMinimized ? "Expand Project" : "Minimize Project"}
+                        >
+                            {isMinimized ? (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path></svg>
+                            )}
+                        </button>
+                        <button
+                            onClick={handleAddJob}
+                            className="ml-3 p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-md transform hover:scale-110"
+                            title="Add Top-Level Job"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        </button>
+                        <button
+                            onClick={() => deleteProject(project.id)}
+                            className="ml-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md transform hover:scale-110"
+                            title="Delete Project"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+
+                    {!isMinimized && (
+                        <>
+                            {isEditing ? (
+                                <>
+                                    <textarea
+                                        value={editedDescription}
+                                        onChange={(e) => setEditedDescription(e.target.value)}
+                                        placeholder="Project Description"
+                                        rows="3"
+                                        className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                    <div className="flex items-center mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={editedIsImportant}
+                                            onChange={(e) => setEditedIsImportant(e.target.checked)}
+                                            className="mr-2 h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                                        />
+                                        <label className="text-md text-gray-700 font-medium">Mark as Important</label>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                        <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                            Start:
+                                            <input
+                                                type="datetime-local"
+                                                value={formatDateTimeLocal(editedStartDate)}
+                                                onChange={(e) => setEditedStartDate(e.target.value)}
+                                                className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm w-full"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                        <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                            End:
+                                            <input
+                                                type="datetime-local"
+                                                value={formatDateTimeLocal(editedEndDate)}
+                                                onChange={(e) => setEditedEndDate(e.target.value)}
+                                                className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm w-full"
+                                            />
+                                        </label>
+                                        <div className="flex flex-row gap-1 items-center justify-end flex-wrap">
+                                            <input type="number" placeholder="H" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'hours')} />
+                                            <input type="number" placeholder="D" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'days')} />
+                                            <input type="number" placeholder="W" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'weeks')} />
+                                            <input type="number" placeholder="M" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'months')} />
+                                            <input type="number" placeholder="Y" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'years')} />
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleSave}
+                                        className="mt-4 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md transform hover:scale-105 self-end"
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            ) : (
+                                <div onClick={() => setIsEditing(true)} className="cursor-pointer">
+                                    {project.description && <p className="text-md text-gray-700 mb-2">{project.description}</p>}
+                                    {(project.startDate || project.endDate) && (
+                                        <p className="text-sm text-gray-600">
+                                            {project.startDate && `Start: ${new Date(project.startDate).toLocaleString()}`}
+                                            {project.startDate && project.endDate && ' | '}
+                                            {project.endDate && `End: ${new Date(project.endDate).toLocaleString()}`}
+                                        </p>
+                                    )}
+                                    {project.isImportant && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">
+                                            Important
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            <ProjectProgressMeter
+                                completedTasks={projectCompletedTasks}
+                                totalTasks={projectTotalTasks}
+                                startDate={project.startDate}
+                                endDate={project.endDate}
+                            />
+                            <div className="flex flex-col">
+                                {/* Pass moveJobUp/Down and isFirst/isLast props to Job component */}
+                                {project.jobs && project.jobs.map((job, index) => (
+                                    <Job
+                                        key={job.id}
+                                        job={job}
+                                        projectId={project.id}
+                                        parentJobId={project.id} // This is the parent for top-level jobs
+                                        level={0}
+                                        updateJob={updateJob}
+                                        deleteJob={deleteJob}
+                                        moveJobUp={moveJobUp} // Pass reordering functions
+                                        moveJobDown={moveJobDown} // Pass reordering functions
+                                        isFirst={index === 0}
+                                        isLast={index === project.jobs.length - 1}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        // Helper function to flatten all jobs (and sub-jobs) from all projects
+        const getAllJobsFlat = (projects) => {
+            let allJobs = [];
+            projects.forEach(project => {
+                // Add project itself as a job for filtering
+                allJobs.push({ ...project, type: 'project', parentId: null, projectId: project.id, projectName: project.name });
+
+                const traverseJobs = (jobs, currentProjectId, currentParentId, currentLevel) => {
+                    jobs.forEach(job => {
+                        allJobs.push({ ...job, type: 'job', parentId: currentParentId, projectId: currentProjectId, projectName: projects.find(p => p.id === currentProjectId)?.name || 'Unknown Project', level: currentLevel });
+                        if (job.subJobs && job.subJobs.length > 0) {
+                            traverseJobs(job.subJobs, currentProjectId, job.id, currentLevel + 1);
+                        }
+                    });
+                };
+                traverseJobs(project.jobs || [], project.id, project.id, 0); // Level 0 for top-level jobs
+            });
+            return allJobs;
+        };
+
+        // Helper function to render a simplified job item for the special lists
+        const SimpleJobItem = ({ job }) => (
+            <div className="bg-white p-3 rounded-md shadow-sm mb-2 border border-gray-200">
+                <h4 className="font-semibold text-gray-800">{job.name} {job.isImportant && <span className="ml-1 text-purple-600 text-xs">(Important)</span>}</h4>
+                {job.description && <p className="text-sm text-gray-600">{job.description.length > 100 ? job.description.substring(0, 97) + '...' : job.description}</p>}
+                {(job.startDate || job.endDate) && (
+                    <p className="text-xs text-gray-500 mt-1">
+                        {job.startDate && `Start: ${new Date(job.startDate).toLocaleDateString()}`}
+                        {job.startDate && job.endDate && ' | '}
+                        {job.endDate && `End: ${new Date(job.endDate).toLocaleDateString()}`}
+                    </p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">Project: {job.projectName}</p>
+            </div>
+        );
+
+
+        function AppContent() { // Renamed the main App component to AppContent
+            const [projects, setProjects] = useState([]);
+            const [userId, setUserId] = useState(() => {
+                // Generate or retrieve a persistent user ID from localStorage
+                let storedUserId = localStorage.getItem('trackproUserId');
+                if (!storedUserId) {
+                    storedUserId = crypto.randomUUID();
+                    localStorage.setItem('trackproUserId', storedUserId);
+                }
+                return storedUserId;
+            });
+            const [newProjectName, setNewProjectName] = useState('');
+            const [launchDateTime, setLaunchDateTime] = useState('');
+            const [showConfirmModal, setShowConfirmModal] = useState(false);
+            const [modalAction, setModalAction] = useState(null);
+            const [modalPayload, setModalPayload] = useState({});
+            const fileInputRef = useRef(null); // Ref for file input
+
+            // Load projects from localStorage on component mount
+            useEffect(() => {
+                const storedProjects = JSON.parse(localStorage.getItem(`trackproProjects_${userId}`)) || [];
+                setProjects(storedProjects);
+
+                const storedLaunchDateTime = localStorage.getItem(`trackproLaunchDateTime_${userId}`);
+                if (storedLaunchDateTime) {
+                    setLaunchDateTime(storedLaunchDateTime);
+                } else {
+                    const currentDateTime = new Date().toISOString().slice(0, 16);
+                    localStorage.setItem(`trackproLaunchDateTime_${userId}`, currentDateTime);
+                    setLaunchDateTime(currentDateTime);
+                }
+            }, [userId]);
+
+            // Save projects to localStorage whenever the projects state changes
+            useEffect(() => {
+                localStorage.setItem(`trackproProjects_${userId}`, JSON.stringify(projects));
+            }, [projects, userId]);
+
+            const updateLaunchDateTime = (newDateTime) => {
+                setLaunchDateTime(newDateTime);
+                localStorage.setItem(`trackproLaunchDateTime_${userId}`, newDateTime);
+            };
+
+            const addProject = () => {
+                if (!newProjectName.trim()) {
+                    return;
+                }
+                const currentDateTime = new Date().toISOString().slice(0, 16);
+                const newProject = {
+                    id: crypto.randomUUID(),
+                    name: newProjectName,
+                    description: "Description for this project.",
+                    startDate: currentDateTime,
+                    endDate: '',
+                    jobs: [],
+                    completed: false,
+                    isImportant: false,
+                    createdAt: new Date().toISOString()
+                };
+                setProjects(prevProjects => [...prevProjects, newProject]);
+                setNewProjectName('');
+            };
+
+            const updateProject = (projectId, updatedFields) => {
+                setProjects(prevProjects =>
+                    prevProjects.map(project =>
+                        project.id === projectId ? { ...project, ...updatedFields } : project
+                    )
+                );
+            };
+
+            const deleteProject = (projectId) => {
+                setModalAction('deleteProject');
+                setModalPayload({ projectId });
+                setShowConfirmModal(true);
+            };
+
+            const confirmDeleteProject = () => {
+                setProjects(prevProjects => prevProjects.filter(p => p.id !== modalPayload.projectId));
+                setShowConfirmModal(false);
+                setModalAction(null);
+                setModalPayload({});
+            };
+
+            const updateJob = (projectId, parentJobId, jobId, updatedFieldsOrNewJob) => {
+                setProjects(prevProjects => {
+                    return prevProjects.map(project => {
+                        if (project.id === projectId) {
+                            const updateJobsRecursive = (items) => {
+                                return items.map(item => {
+                                    if (item.id === jobId && updatedFieldsOrNewJob.id === undefined) { // Updating existing job
+                                        return { ...item, ...updatedFieldsOrNewJob };
+                                    } else if (item.id === parentJobId && updatedFieldsOrNewJob.id !== undefined && jobId === null) { // Adding a new sub-job
+                                        return { ...item, subJobs: [...(item.subJobs || []), updatedFieldsOrNewJob] };
+                                    }
+                                    if (item.subJobs && item.subJobs.length > 0) {
+                                        return { ...item, subJobs: updateJobsRecursive(item.subJobs) };
+                                    }
+                                    return item;
+                                });
+                            };
+
+                            if (jobId === null && parentJobId === projectId) { // Adding a new top-level job directly to the project
+                                return { ...project, jobs: [...(project.jobs || []), updatedFieldsOrNewJob] };
+                            } else { // Handle updates or adding sub-jobs to nested jobs
+                                return { ...project, jobs: updateJobsRecursive(project.jobs || []) };
+                            }
+                        }
+                        return project;
+                    });
+                });
+            };
+
+            const deleteJob = (projectId, parentJobId, jobId) => {
+                setModalAction('deleteJob');
+                setModalPayload({ projectId, parentJobId, jobId });
+                setShowConfirmModal(true);
+            };
+
+            const confirmDeleteJob = () => {
+                const { projectId, jobId } = modalPayload;
+                setProjects(prevProjects => {
+                    return prevProjects.map(project => {
+                        if (project.id === projectId) {
+                            const removeJobRecursive = (items) => {
+                                return items.reduce((acc, item) => {
+                                    if (item.id === jobId) {
+                                        return acc; // Skip this item (delete it)
+                                    } else if (item.subJobs && item.subJobs.length > 0) {
+                                        const newSubJobs = removeJobRecursive(item.subJobs);
+                                        // Only add if subJobs changed or if there are still subJobs
+                                        if (newSubJobs.length !== item.subJobs.length || newSubJobs.length > 0) {
+                                            acc.push({ ...item, subJobs: newSubJobs });
+                                        } else {
+                                            acc.push(item);
+                                        }
+                                    } else {
+                                        acc.push(item);
+                                    }
+                                    return acc;
+                                }, []);
+                            };
+                            return { ...project, jobs: removeJobRecursive(project.jobs || []) };
+                        }
+                        return project;
+                    });
+                });
+                setShowConfirmModal(false);
+                setModalAction(null);
+                setModalPayload({});
+            };
+
+            // Function to reorder jobs up or down
+            const reorderJobs = (projectId, parentJobId, jobIdToMove, direction) => {
+                setProjects(prevProjects => {
+                    const newProjects = prevProjects.map(project => {
+                        if (project.id === projectId) {
+                            const reorderRecursive = (items) => {
+                                const newItems = [...items];
+                                const index = newItems.findIndex(item => item.id === jobIdToMove);
+
+                                if (index === -1) {
+                                    // Not found in this level, check sub-jobs
+                                    return newItems.map(item => {
+                                        if (item.subJobs && item.subJobs.length > 0) {
+                                            return { ...item, subJobs: reorderRecursive(item.subJobs) };
+                                        }
+                                        return item;
+                                    });
+                                }
+
+                                // Found at this level, perform reorder
+                                const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+                                if (newIndex >= 0 && newIndex < newItems.length) {
+                                    const [removed] = newItems.splice(index, 1);
+                                    newItems.splice(newIndex, 0, removed);
+                                }
+                                return newItems;
+                            };
+
+                            // Determine which list to reorder: top-level jobs or sub-jobs
+                            if (parentJobId === projectId) { // It's a top-level job within the project
+                                return { ...project, jobs: reorderRecursive(project.jobs || []) };
+                            } else { // It's a sub-job within another job
+                                const updateParentJobRecursive = (items) => {
+                                    return items.map(item => {
+                                        if (item.id === parentJobId) {
+                                            return { ...item, subJobs: reorderRecursive(item.subJobs || []) };
+                                        }
+                                        if (item.subJobs && item.subJobs.length > 0) {
+                                            return { ...item, subJobs: updateParentJobRecursive(item.subJobs) };
+                                        }
+                                        return item;
+                                    });
+                                };
+                                return { ...project, jobs: updateParentJobRecursive(project.jobs || []) };
+                            }
+                        }
+                        return project;
+                    });
+                    return newProjects;
+                });
+            };
+
+            const moveJobUp = (projectId, parentJobId, jobId) => {
+                reorderJobs(projectId, parentJobId, jobId, 'up');
+            };
+
+            const moveJobDown = (projectId, parentJobId, jobId) => {
+                reorderJobs(projectId, parentJobId, jobId, 'down');
+            };
+
+
+            const handleConfirm = () => {
+                if (modalAction === 'deleteProject') {
+                    confirmDeleteProject();
+                } else if (modalAction === 'deleteJob') {
+                    confirmDeleteJob();
+                }
+            };
+
+            const handleCancel = () => {
+                setShowConfirmModal(false);
+                setModalAction(null);
+                setModalPayload({});
+            };
+
+            // Function to export data
+            const exportData = () => {
+                const data = JSON.stringify(projects, null, 2); // Pretty print JSON
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `trackpro_data_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Function to trigger file input click for import
+            const importData = () => {
+                fileInputRef.current.click();
+            };
+
+            // Function to handle file selection and import
+            const handleFileChange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedProjects = JSON.parse(e.target.result);
+                            // Basic validation: Check if it's an array
+                            if (Array.isArray(importedProjects)) {
+                                setProjects(importedProjects);
+                                // Optionally clear the input so the same file can be re-selected
+                                event.target.value = '';
+                                // You might want to add a success message here
+                            } else {
+                                console.error("Imported file is not a valid JSON array.");
+                                // Show an error message to the user
+                            }
+                        } catch (error) {
+                            console.error("Error parsing imported JSON:", error);
+                            // Show an error message to the user
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+
+            // Derived state for filtered jobs (moved outside App component, as it depends only on props)
+            const upcomingJobs = getAllJobsFlat(projects).filter(job => {
+                const startDate = new Date(job.endDate);
+                const now = new Date();
+                const thirtyDaysFromNow = new Date();
+                thirtyDaysFromNow.setDate(now.getDate() + 8);
+                return !job.completed && startDate > now && startDate < thirtyDaysFromNow;
+            }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).slice(0,5);
+
+            const importantJobs = getAllJobsFlat(projects).filter(job => job.isImportant).sort((a, b) => {
+                if (a.startDate && b.startDate) {
+                    return new Date(a.startDate) - new Date(b.endDate);
+                }
+                return 0;
+            });
+
+            const topImportantJobs = importantJobs.slice(0, 5);
+
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-8 font-inter">
+                    <h1 className="text-5xl font-extrabold text-center text-indigo-800 mb-4 tracking-tight animate-fade-in-down">
+                        TrackPro - Project Tracker
+                    </h1>
+                    <p className="text-center text-lg text-gray-600 mb-6 max-w-2xl mx-auto animate-fade-in">
+                        Organize your tasks efficiently with a clear, hierarchy. Create projects, break them down into sub-jobs, track timeframes, and mark completion with ease. Your progress is saved automatically to your browser's local storage!
+                    </p>
+                    <div className="text-center mb-6 text-red-700 font-bold text-lg">
+                        NOTE: File attachments are NOT supported in this local-storage version.
+                    </div>
+                    <div className="text-center mb-6 text-gray-700 animate-fade-in-up">
+                        Website by <span className="font-semibold text-indigo-700">Bhaskar KC</span> (<a href="mailto:vaskardata@gmail.com" className="text-blue-600 hover:underline">vaskardata@gmail.com</a>)
+                    </div>
+
+                    <div className="text-center mb-6 text-gray-700">
+                        Your Local User ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded-md text-sm">{userId}</span>
+                    </div>
+
+                    <div className="flex justify-center mb-8 items-center flex-wrap gap-4 p-4 bg-white rounded-lg shadow-md animate-fade-in">
+                        <label htmlFor="launch-datetime" className="text-gray-700 font-medium">Date/Time:</label>
+                        <input
+                            type="datetime-local"
+                            id="launch-datetime"
+                            value={formatDateTimeLocal(launchDateTime)}
+                            onChange={(e) => {
+                                setLaunchDateTime(e.target.value);
+                                updateLaunchDateTime(e.target.value);
+                            }}
+                            className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base flex-grow sm:flex-grow-0"
+                        />
+                    </div>
+
+                    <div className="flex justify-center mb-8 flex-wrap gap-4">
+                        <input
+                            type="text"
+                            value={newProjectName}
+                            onChange={(e) => setNewProjectName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addProject()}
+                            placeholder="New Project Name"
+                            className="w-full max-w-lg p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
+                        />
+                        <button
+                            onClick={addProject}
+                            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors transform hover:scale-105 active:scale-95 button-fancy"
+                        >
+                            Add Project
+                        </button>
+                    </div>
+
+                    {/* Export/Import Buttons */}
+                    <div className="flex justify-center mb-8 flex-wrap gap-4">
+                        <button
+                            onClick={exportData}
+                            className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors transform hover:scale-105 active:scale-95 button-fancy"
+                        >
+                            Export Data
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept=".json"
+                            className="hidden" // Hide the actual file input
+                        />
+                        <button
+                            onClick={importData}
+                            className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors transform hover:scale-105 active:scale-95 button-fancy"
+                        >
+                            Import Data
+                        </button>
+                    </div>
+
+
+                    {/* Top Upcoming Jobs Section */}
+                    {upcomingJobs.length > 0 && (
+                        <div className="mb-8 p-6 bg-yellow-50 rounded-xl shadow-lg">
+                            <h2 className="text-3xl font-bold text-yellow-800 mb-4 text-center">Top Upcoming Jobs</h2>
+                            <p className="text-center text-yellow-700 mb-4">Tasks Due date soon (within the next 7 days) that are not yet completed.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {upcomingJobs.map(job => (
+                                    <SimpleJobItem key={job.id} job={job} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Important Jobs Section (first 5 important jobs) */}
+                    {topImportantJobs.length > 0 && (
+                        <div className="mb-8 p-6 bg-pink-50 rounded-xl shadow-lg">
+                            <h2 className="text-3xl font-bold text-pink-800 mb-4 text-center">Top Important Jobs</h2>
+                            <p className="text-center text-pink-700 mb-4">The top 5 most important tasks based on their start date.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {topImportantJobs.map(job => (
+                                    <SimpleJobItem key={job.id} job={job} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap justify-center items-start gap-6">
+                        {projects.length === 0 ? (
+                            <p className="text-center text-gray-600 text-lg mt-10 w-full animate-fade-in">No projects yet. Add one above!</p>
+                        ) : (
+                            projects.map((project) => (
+                                <Project
+                                    key={project.id}
+                                    project={project}
+                                    updateProject={updateProject}
+                                    deleteProject={deleteProject}
+                                    updateJob={updateJob}
+                                    deleteJob={deleteJob}
+                                    moveJobUp={moveJobUp} // Pass reordering functions
+                                    moveJobDown={moveJobDown} // Pass reordering functions
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    {/* Confirmation Modal */}
+                    {showConfirmModal && (
+                        <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50 animate-fade-in">
+                            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform scale-95 animate-scale-in">
+                                <h3 className="text-xl font-bold mb-4 text-gray-800">Confirm Deletion</h3>
+                                <p className="mb-6 text-gray-700">
+                                    Are you sure you want to delete this {modalAction === 'deleteProject' ? 'project and all its jobs' : 'job and all its sub-jobs'}? This action cannot be undone.
+                                </p>
+                                <div className="flex justify-around">
+                                    <button
+                                        onClick={handleCancel}
+                                        className="px-5 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors transform hover:scale-105 active:scale-95"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleConfirm}
+                                        className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors transform hover:scale-105 active:scale-95"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // --- Main App Component that handles the login state ---
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+            // Check if user is already logged in (e.g., from a session storage flag)
+            // For this basic example, we'll just start logged out.
+            // In a real app, you might check localStorage or sessionStorage for a token.
+            useEffect(() => {
+                const storedLoginStatus = sessionStorage.getItem('trackproLoggedIn');
+                if (storedLoginStatus === 'true') {
+                    setIsLoggedIn(true);
+                }
+            }, []);
+
+            const handleLoginSuccess = () => {
+                setIsLoggedIn(true);
+                sessionStorage.setItem('trackproLoggedIn', 'true'); // Persist login for the session
+            };
+
+            const handleLogout = () => {
+                setIsLoggedIn(false);
+                sessionStorage.removeItem('trackproLoggedIn'); // Clear login status
+                // Optionally clear local storage data here if you want data to be user-specific
+                // localStorage.removeItem('trackproProjects_YOUR_USER_ID');
+            };
+
+            return (
+                <>
+                    {isLoggedIn ? (
+                        <>
+                            <div className="absolute top-4 right-4 z-50">
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors shadow-md"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                            <AppContent />
+                        </>
+                    ) : (
+                        <LoginScreen onLoginSuccess={handleLoginSuccess} />
+                    )}
+                </>
+            );
+        }
+
+        // Render the App component to the root div
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
