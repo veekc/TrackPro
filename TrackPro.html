@@ -15,11 +15,12 @@
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f4f8; /* Light blue-gray background */
+            /* Using Tailwind's bg-gradient-to-br class directly on the root div/AppContent */
+            /* background-color: #f0f4f8; */
         }
         /* Keyframe animations for "fancy" design */
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-30px); } /* Increased translateY for more pop */
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes fadeIn {
@@ -27,31 +28,62 @@
             to { opacity: 1; }
         }
         @keyframes scaleIn {
-            from { transform: scale(0.95); opacity: 0; }
+            from { transform: scale(0.9); opacity: 0; } /* More pronounced scale */
             to { transform: scale(1); opacity: 1; }
         }
         .animate-fade-in-down {
-            animation: fadeInDown 0.6s ease-out forwards;
+            animation: fadeInDown 0.7s ease-out forwards; /* Slightly longer duration */
         }
         .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
+            animation: fadeIn 0.9s ease-out forwards; /* Slightly longer duration */
         }
         .animate-scale-in {
-            animation: scaleIn 0.3s ease-out forwards;
+            animation: scaleIn 0.4s ease-out forwards; /* Slightly longer duration */
         }
         .button-fancy {
             background-image: linear-gradient(to right, #6366F1, #8B5CF6); /* Purple gradient */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3); /* Stronger, colored shadow */
             border: none;
             color: white;
             transition: all 0.3s ease-in-out;
+            transform: translateY(0); /* Ensure initial state for hover */
         }
         .button-fancy:hover {
-            background-image: linear-gradient(to right, #4F46E5, #7C3AED);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            background-image: linear-image: linear-gradient(to right, #4F46E5, #7C3AED);
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.4); /* Even stronger, colored shadow on hover */
+            transform: translateY(-2px); /* Lift effect */
         }
         .button-fancy:active {
-            transform: scale(0.95);
+            transform: scale(0.98); /* Subtle click feedback */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reduced shadow on click */
+        }
+        /* General input styling for consistency */
+        input[type="text"],
+        input[type="password"],
+        input[type="datetime-local"],
+        textarea {
+            @apply shadow-sm border border-gray-300 rounded-md py-2 px-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200;
+        }
+        /* Specific styling for the date input to ensure full visibility of the picker */
+        input[type="datetime-local"] {
+            min-width: 220px; /* Ensure enough space for date/time controls */
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f4f8; /* Light background */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* Gray thumb */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; /* Darker gray on hover */
         }
     </style>
 </head>
@@ -82,46 +114,46 @@
             };
 
             return (
-                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 p-4">
-                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md animate-fade-in-down">
-                        <h2 className="text-4xl font-extrabold text-center text-purple-800 mb-6">TrackPro Login</h2>
-                        <form onSubmit={handleLogin}>
-                            <div className="mb-4">
-                                <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 p-4 sm:p-6 lg:p-8">
+                    <div className="bg-white p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-md animate-fade-in-down transform hover:scale-[1.01] transition-transform duration-300">
+                        <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-purple-800 mb-8 tracking-tight">TrackPro Login</h2>
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            <div>
+                                <label htmlFor="username" className="block text-gray-700 text-sm font-semibold mb-2">Username:</label>
                                 <input
                                     type="text"
                                     id="username"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mb-6">
-                                <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+                            <div>
+                                <label htmlFor="password" className="block text-gray-700 text-sm font-semibold mb-2">Password:</label>
                                 <input
                                     type="password"
                                     id="password"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                             </div>
                             {error && (
-                                <p className="text-red-500 text-xs italic mb-4 text-center">{error}</p>
+                                <p className="text-red-600 text-sm font-medium text-center -mt-3">{error}</p>
                             )}
-                            <div className="flex items-center justify-center">
+                            <div className="pt-4">
                                 <button
                                     type="submit"
-                                    className="button-fancy font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg"
+                                    className="w-full button-fancy font-bold py-3 px-6 rounded-lg text-lg"
                                 >
                                     Sign In
                                 </button>
                             </div>
                         </form>
-                        <p className="text-center text-sm text-gray-500 mt-6">
-                            Hint: Default user is 'user' and password is '1234'.
+                        <p className="text-center text-sm text-gray-500 mt-8">
+                            Hint: Default user is 'bhkc' and password is '2163'.
                         </p>
                     </div>
                 </div>
@@ -186,78 +218,78 @@
             };
 
             return (
-                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 p-4">
-                    <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md animate-fade-in-down">
-                        <h2 className="text-4xl font-extrabold text-center text-purple-800 mb-6">Change Credentials</h2>
-                        <form onSubmit={handleChangeCredentials}>
-                            <div className="mb-4">
-                                <label htmlFor="oldUsername" className="block text-gray-700 text-sm font-bold mb-2">Current Username:</label>
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200 p-4 sm:p-6 lg:p-8">
+                    <div className="bg-white p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-md animate-fade-in-down transform hover:scale-[1.01] transition-transform duration-300">
+                        <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-purple-800 mb-8 tracking-tight">Change Credentials</h2>
+                        <form onSubmit={handleChangeCredentials} className="space-y-6">
+                            <div>
+                                <label htmlFor="oldUsername" className="block text-gray-700 text-sm font-semibold mb-2">Current Username:</label>
                                 <input
                                     type="text"
                                     id="oldUsername"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={oldUsername}
                                     onChange={(e) => setOldUsername(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label htmlFor="oldPassword" className="block text-gray-700 text-sm font-bold mb-2">Current Password:</label>
+                            <div>
+                                <label htmlFor="oldPassword" className="block text-gray-700 text-sm font-semibold mb-2">Current Password:</label>
                                 <input
                                     type="password"
                                     id="oldPassword"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={oldPassword}
                                     onChange={(e) => setOldPassword(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label htmlFor="newUsername" className="block text-gray-700 text-sm font-bold mb-2">New Username (optional):</label>
+                            <div>
+                                <label htmlFor="newUsername" className="block text-gray-700 text-sm font-semibold mb-2">New Username (optional):</label>
                                 <input
                                     type="text"
                                     id="newUsername"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">New Password:</label>
+                            <div>
+                                <label htmlFor="newPassword" className="block text-gray-700 text-sm font-semibold mb-2">New Password:</label>
                                 <input
                                     type="password"
                                     id="newPassword"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mb-6">
-                                <label htmlFor="confirmNewPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirm New Password:</label>
+                            <div>
+                                <label htmlFor="confirmNewPassword" className="block text-gray-700 text-sm font-semibold mb-2">Confirm New Password:</label>
                                 <input
                                     type="password"
                                     id="confirmNewPassword"
-                                    className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-purple-500"
+                                    className="w-full"
                                     value={confirmNewPassword}
                                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                                     required
                                 />
                             </div>
                             {message && (
-                                <p className={`text-xs italic mb-4 text-center ${isError ? 'text-red-500' : 'text-green-500'}`}>{message}</p>
+                                <p className={`text-sm font-medium text-center ${isError ? 'text-red-600' : 'text-green-600'} -mt-3`}>{message}</p>
                             )}
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between pt-4">
                                 <button
                                     type="button"
                                     onClick={onCancel}
-                                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors shadow-md"
+                                    className="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors shadow-md transform hover:scale-105 active:scale-95"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="button-fancy font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline text-lg"
+                                    className="button-fancy font-bold py-3 px-6 rounded-lg text-lg"
                                 >
                                     Change
                                 </button>
@@ -283,6 +315,26 @@
             }
         };
 
+        /**
+         * Helper function to recursively duplicate a job or project, generating new IDs for all nested items.
+         * @param {object} item The job or project object to duplicate.
+         * @returns {object} A deep copy of the item with new unique IDs.
+         */
+        const deepCopyWithNewIds = (item) => {
+            const newItem = { ...item, id: crypto.randomUUID() }; // Create a shallow copy and assign a new ID
+
+            if (newItem.jobs) {
+                // If it's a project, recursively duplicate its top-level jobs
+                newItem.jobs = newItem.jobs.map(job => deepCopyWithNewIds(job));
+            }
+            if (newItem.subJobs) {
+                // If it's a job, recursively duplicate its sub-jobs
+                newItem.subJobs = newItem.subJobs.map(subJob => deepCopyWithNewIds(subJob));
+            }
+            return newItem;
+        };
+
+
         // Project Progress Meter component
         const ProjectProgressMeter = ({ completedTasks, totalTasks, startDate, endDate }) => {
             const getTimeProgress = () => {
@@ -305,7 +357,7 @@
                 : (percentTime >= 100 ? "Deadline Passed" : "In Progress");
 
             return (
-                <div className="border border-gray-300 p-4 rounded-lg mb-4 bg-gray-50">
+                <div className="border border-gray-300 p-4 rounded-lg mb-4 bg-gray-50 shadow-inner">
                     <h3 className="font-semibold text-lg text-gray-700 mb-2">📊 Project Progress</h3>
                     <p className="text-sm text-gray-600 mb-1">Tasks: {completedTasks} / {totalTasks} ({percentTasks}%)</p>
                     <div className="bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
@@ -321,8 +373,9 @@
         };
 
         // Recursive Job component for sub-jobs
-        const Job = ({ job, projectId, parentJobId, level, updateJob, deleteJob, moveJobUp, moveJobDown, isFirst, isLast }) => {
+        const Job = ({ job, projectId, parentJobId, level, updateJob, deleteJob, moveJobUp, moveJobDown, duplicateJob, isFirst, isLast }) => {
             const [isEditing, setIsEditing] = useState(false);
+            const [isMinimized, setIsMinimized] = useState(true); // New state for minimizing
             const [editedName, setEditedName] = useState(job.name);
             const [editedTimeframe, setEditedTimeframe] = useState(job.timeframe);
             const [editedDescription, setEditedDescription] = useState(job.description || '');
@@ -405,12 +458,18 @@
                 setEditedEndDate(formatDateTimeLocal(newEndDate));
             };
 
+            // Function to handle duplication of this job
+            const handleDuplicateJob = () => {
+                duplicateJob(projectId, parentJobId, job);
+            };
+
+
             return (
                 <div
-                    className={`flex flex-col p-3 m-2 rounded-lg shadow-md transition-all duration-300 ${
+                    className={`flex flex-col p-3 my-2 rounded-lg shadow-md transition-all duration-300 transform hover:scale-[1.005] ${
                         job.completed ? 'bg-gray-200 text-gray-500 line-through' : 'bg-white text-gray-800'
                     }`}
-                    style={{ marginLeft: `${level * 20}px`, minWidth: '300px' }}
+                    style={{ marginLeft: `${level * 60}px`, minWidth: '300px' }} /* Increased indent from 40px to 60px */
                 >
                     <div className="flex items-center mb-2">
                         <input
@@ -433,16 +492,35 @@
                                 {job.name}
                             </h4>
                         )}
+                        {/* Minimize/Expand Button for Job */}
+                        <button
+                            onClick={() => setIsMinimized(!isMinimized)}
+                            className="ml-2 p-1 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors shadow-sm transform hover:scale-110"
+                            title={isMinimized ? "Expand Job" : "Minimize Job"}
+                        >
+                            {isMinimized ? (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path></svg>
+                            )}
+                        </button>
                         <button
                             onClick={handleAddSubJob}
-                            className="ml-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-md transform hover:scale-110"
+                            className="ml-1 p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-sm transform hover:scale-110"
                             title="Add Sub-Job"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         </button>
                         <button
+                            onClick={handleDuplicateJob}
+                            className="ml-1 p-1 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors shadow-sm transform hover:scale-110"
+                            title="Duplicate Job"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v4a1 1 0 001 1h4m-4 0a1 1 0 01-1-1V7m-2 2H6m8 10h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-8 4v2a2 2 0 002 2h2"></path></svg>
+                        </button>
+                        <button
                             onClick={() => deleteJob(projectId, parentJobId, job.id)}
-                            className="ml-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md transform hover:scale-110"
+                            className="ml-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-sm transform hover:scale-110"
                             title="Delete Job"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -451,7 +529,7 @@
                         <button
                             onClick={() => moveJobUp(projectId, parentJobId, job.id)}
                             disabled={isFirst}
-                            className={`ml-2 p-2 rounded-full shadow-md transform hover:scale-110 transition-colors ${isFirst ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            className={`ml-1 p-1 rounded-full shadow-sm transform hover:scale-110 transition-colors ${isFirst ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                             title="Move Job Up"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
@@ -459,118 +537,125 @@
                         <button
                             onClick={() => moveJobDown(projectId, parentJobId, job.id)}
                             disabled={isLast}
-                            className={`ml-2 p-2 rounded-full shadow-md transform hover:scale-110 transition-colors ${isLast ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                            className={`ml-1 p-1 rounded-full shadow-sm transform hover:scale-110 transition-colors ${isLast ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                             title="Move Job Down"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V6"></path></svg>
                         </button>
                     </div>
 
-                    {isEditing ? (
+                    {!isMinimized && ( /* Conditionally render content if not minimized */
                         <>
-                            <textarea
-                                value={editedDescription}
-                                onChange={(e) => setEditedDescription(e.target.value)}
-                                placeholder="Job Description"
-                                rows="2"
-                                className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            />
-                            <input
-                                type="text"
-                                value={editedTimeframe}
-                                onChange={(e) => setEditedTimeframe(e.target.value)}
-                                placeholder="Timeframe (e.g., Q1 2024)"
-                                className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            />
-                            <div className="flex items-center mb-2">
-                                <input
-                                    type="checkbox"
-                                    checked={editedIsImportant}
-                                    onChange={(e) => setEditedIsImportant(e.target.checked)}
-                                    className="mr-2 h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
-                                />
-                                <label className="text-sm text-gray-700 font-medium">Mark as Important</label>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                                <label className="flex-grow text-sm text-gray-600 flex items-center">
-                                    Start:
-                                    <input
-                                        type="datetime-local"
-                                        value={formatDateTimeLocal(editedStartDate)}
-                                        onChange={(e) => setEditedStartDate(e.target.value)}
-                                        className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+                            {isEditing ? (
+                                <>
+                                    <textarea
+                                        value={editedDescription}
+                                        onChange={(e) => setEditedDescription(e.target.value)}
+                                        placeholder="Job Description"
+                                        rows="2"
+                                        className="w-full"
                                     />
-                                </label>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                                <label className="flex-grow text-sm text-gray-600 flex items-center">
-                                    End:
                                     <input
-                                        type="datetime-local"
-                                        value={formatDateTimeLocal(editedEndDate)}
-                                        onChange={(e) => setEditedEndDate(e.target.value)}
-                                        className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+                                        type="text"
+                                        value={editedTimeframe}
+                                        onChange={(e) => setEditedTimeframe(e.target.value)}
+                                        placeholder="Timeframe (e.g., Q1 2024)"
+                                        className="w-full"
                                     />
-                                </label>
-                                <div className="flex flex-row gap-1 items-center justify-end flex-wrap">
-                                    <input type="number" placeholder="H" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'hours')} />
-                                    <input type="number" placeholder="D" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'days')} />
-                                    <input type="number" placeholder="W" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'weeks')} />
-                                    <input type="number" placeholder="M" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'months')} />
-                                    <input type="number" placeholder="Y" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'years')} />
+                                    <div className="flex items-center mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={editedIsImportant}
+                                            onChange={(e) => setEditedIsImportant(e.target.checked)}
+                                            className="mr-2 h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
+                                        />
+                                        <label className="text-sm text-gray-700 font-medium">Mark as Important</label>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                        <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                            Start:
+                                            <input
+                                                type="datetime-local"
+                                                value={formatDateTimeLocal(editedStartDate)}
+                                                onChange={(e) => setEditedStartDate(e.target.value)}
+                                                className="ml-1 w-full"
+                                                title="Use the calendar picker for date selection or type carefully (e.g., '2025-01-01T10:00')"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                        <label className="flex-grow text-sm text-gray-600 flex items-center">
+                                            End:
+                                            <input
+                                                type="datetime-local"
+                                                value={formatDateTimeLocal(editedEndDate)}
+                                                onChange={(e) => setEditedEndDate(e.target.value)}
+                                                className="ml-1 w-full"
+                                                title="Use the calendar picker for date selection or type carefully (e.g., '2025-01-01T10:00')"
+                                            />
+                                        </label>
+                                        <div className="flex flex-row gap-1 items-center justify-end flex-wrap">
+                                            <input type="number" placeholder="H" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'hours')} />
+                                            <input type="number" placeholder="D" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'days')} />
+                                            <input type="number" placeholder="W" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'weeks')} />
+                                            <input type="number" placeholder="M" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'months')} />
+                                            <input type="number" placeholder="Y" className="w-12 p-1 border rounded text-xs" onChange={(e) => calculateEndDate(e.target.value, 'years')} />
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleSave}
+                                        className="mt-4 px-3 py-1 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md transform hover:scale-105 self-end"
+                                    >
+                                        Save
+                                    </button>
+                                </>
+                            ) : (
+                                <div onClick={() => setIsEditing(true)} className="cursor-pointer">
+                                    {job.description && <p className="text-sm text-gray-700 mb-1">{job.description}</p>}
+                                    {job.timeframe && <p className="text-xs text-gray-600 mb-1">Timeframe: {job.timeframe}</p>}
+                                    {(job.startDate || job.endDate) && (
+                                        <p className="text-xs text-gray-600">
+                                            {job.startDate && `Start: ${new Date(job.startDate).toLocaleString()}`}
+                                            {job.startDate && job.endDate && ' | '}
+                                            {job.endDate && `End: ${new Date(job.endDate).toLocaleString()}`}
+                                        </p>
+                                    )}
+                                    {job.isImportant && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">
+                                            Important
+                                        </span>
+                                    )}
                                 </div>
-                            </div>
-                            <button
-                                onClick={handleSave}
-                                className="mt-4 px-3 py-1 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors shadow-md transform hover:scale-105 self-end"
-                            >
-                                Save
-                            </button>
-                        </>
-                    ) : (
-                        <div onClick={() => setIsEditing(true)} className="cursor-pointer">
-                            {job.description && <p className="text-sm text-gray-700 mb-1">{job.description}</p>}
-                            {job.timeframe && <p className="text-xs text-gray-600 mb-1">Timeframe: {job.timeframe}</p>}
-                            {(job.startDate || job.endDate) && (
-                                <p className="text-xs text-gray-600">
-                                    {job.startDate && `Start: ${new Date(job.startDate).toLocaleString()}`}
-                                    {job.startDate && job.endDate && ' | '}
-                                    {job.endDate && `End: ${new Date(job.endDate).toLocaleString()}`}
-                                </p>
                             )}
-                            {job.isImportant && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mt-1">
-                                    Important
-                                </span>
-                            )}
-                        </div>
-                    )}
 
-                    {job.subJobs && job.subJobs.length > 0 && (
-                        <div className="flex flex-col ml-4 mt-2 border-l-2 border-gray-300 pl-2">
-                            {job.subJobs.map((subJob, index) => (
-                                <Job
-                                    key={subJob.id}
-                                    job={subJob}
-                                    projectId={projectId}
-                                    parentJobId={job.id} // This job is the parent for its sub-jobs
-                                    level={level + 1}
-                                    updateJob={updateJob}
-                                    deleteJob={deleteJob}
-                                    moveJobUp={moveJobUp}
-                                    moveJobDown={moveJobDown}
-                                    isFirst={index === 0}
-                                    isLast={index === job.subJobs.length - 1}
-                                />
-                            ))}
-                        </div>
+                            {job.subJobs && job.subJobs.length > 0 && (
+                                <div className="flex flex-col ml-4 mt-2 border-l-2 border-gray-300 pl-2">
+                                    {job.subJobs.map((subJob, index) => (
+                                        <Job
+                                            key={subJob.id}
+                                            job={subJob}
+                                            projectId={projectId}
+                                            parentJobId={job.id} // This job is the parent for its sub-jobs
+                                            level={level + 1}
+                                            updateJob={updateJob}
+                                            deleteJob={deleteJob}
+                                            moveJobUp={moveJobUp}
+                                            moveJobDown={moveJobDown}
+                                            duplicateJob={duplicateJob} // Pass duplicate function
+                                            isFirst={index === 0}
+                                            isLast={index === job.subJobs.length - 1}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             );
         };
 
         // Main Project component
-        const Project = ({ project, updateProject, deleteProject, updateJob, deleteJob, moveJobUp, moveJobDown }) => {
+        const Project = ({ project, updateProject, deleteProject, updateJob, deleteJob, moveJobUp, moveJobDown, duplicateProject, duplicateJob }) => {
             const [isEditing, setIsEditing] = useState(false);
             const [isMinimized, setIsMinimized] = useState(true); // New state for minimizing
             const [editedName, setEditedName] = useState(project.name);
@@ -674,6 +759,10 @@
 
             const { completed: projectCompletedTasks, total: projectTotalTasks } = countTasks(project.jobs);
 
+            // Function to handle duplication of this project
+            const handleDuplicateProject = () => {
+                duplicateProject(project);
+            };
 
             return (
                 <div
@@ -721,6 +810,13 @@
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         </button>
                         <button
+                            onClick={handleDuplicateProject}
+                            className="ml-2 p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-md transform hover:scale-110"
+                            title="Duplicate Project"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v4a1 1 0 001 1h4m-4 0a1 1 0 01-1-1V7m-2 2H6m8 10h2a2 2 0 002-2V9a2 2 0 00-2-2h-2m-8 4v2a2 2 0 002 2h2"></path></svg>
+                        </button>
+                        <button
                             onClick={() => deleteProject(project.id)}
                             className="ml-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md transform hover:scale-110"
                             title="Delete Project"
@@ -738,7 +834,7 @@
                                         onChange={(e) => setEditedDescription(e.target.value)}
                                         placeholder="Project Description"
                                         rows="3"
-                                        className="w-full p-2 mb-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full"
                                     />
                                     <div className="flex items-center mb-2">
                                         <input
@@ -756,7 +852,8 @@
                                                 type="datetime-local"
                                                 value={formatDateTimeLocal(editedStartDate)}
                                                 onChange={(e) => setEditedStartDate(e.target.value)}
-                                                className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm w-full"
+                                                className="ml-1 w-full"
+                                                title="Use the calendar picker for date selection or type carefully (e.g., '2025-01-01T10:00')"
                                             />
                                         </label>
                                     </div>
@@ -767,7 +864,8 @@
                                                 type="datetime-local"
                                                 value={formatDateTimeLocal(editedEndDate)}
                                                 onChange={(e) => setEditedEndDate(e.target.value)}
-                                                className="ml-1 p-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm w-full"
+                                                className="ml-1 w-full"
+                                                title="Use the calendar picker for date selection or type carefully (e.g., '2025-01-01T10:00')"
                                             />
                                         </label>
                                         <div className="flex flex-row gap-1 items-center justify-end flex-wrap">
@@ -821,6 +919,7 @@
                                         deleteJob={deleteJob}
                                         moveJobUp={moveJobUp} // Pass reordering functions
                                         moveJobDown={moveJobDown} // Pass reordering functions
+                                        duplicateJob={duplicateJob} // Pass duplicate function
                                         isFirst={index === 0}
                                         isLast={index === project.jobs.length - 1}
                                     />
@@ -1082,6 +1181,48 @@
                 reorderJobs(projectId, parentJobId, jobId, 'down');
             };
 
+            // Function to duplicate a project
+            const duplicateProject = (projectToDuplicate) => {
+                const duplicated = deepCopyWithNewIds(projectToDuplicate);
+                setProjects(prevProjects => [...prevProjects, duplicated]);
+            };
+
+            // Function to duplicate a job/sub-job
+            const duplicateJob = (projectId, parentJobId, jobToDuplicate) => {
+                setProjects(prevProjects => {
+                    return prevProjects.map(project => {
+                        if (project.id === projectId) {
+                            const duplicateRecursive = (items) => {
+                                const newItems = [];
+                                for (const item of items) {
+                                    newItems.push(item); // Always push the original item
+
+                                    if (item.id === jobToDuplicate.id) {
+                                        // Found the job to duplicate, add its copy
+                                        const duplicated = deepCopyWithNewIds(jobToDuplicate);
+                                        newItems.push(duplicated);
+                                    } else if (item.subJobs && item.subJobs.length > 0) {
+                                        // If it has sub-jobs, recurse into them
+                                        const updatedSubJobs = duplicateRecursive(item.subJobs);
+                                        // If sub-jobs were modified, update this item with the new sub-jobs list
+                                        if (updatedSubJobs.length !== item.subJobs.length) {
+                                            newItems[newItems.length - 1] = { ...item, subJobs: updatedSubJobs };
+                                        }
+                                    }
+                                }
+                                return newItems;
+                            };
+
+                            // Start duplication from the project's top-level jobs
+                            const updatedJobs = duplicateRecursive(project.jobs || []);
+                            return { ...project, jobs: updatedJobs };
+
+                        }
+                        return project; // Return project unchanged if it's not the target project
+                    });
+                });
+            };
+
 
             const handleConfirm = () => {
                 if (modalAction === 'deleteProject') {
@@ -1145,44 +1286,55 @@
 
 
             // Derived state for filtered jobs (moved outside App component, as it depends only on props)
-            const upcomingJobs = getAllJobsFlat(projects).filter(job => {
-                const startDate = new Date(job.endDate);
-                const now = new Date();
-                const thirtyDaysFromNow = new Date();
-                thirtyDaysFromNow.setDate(now.getDate() + 8);
-                return !job.completed && startDate > now && startDate < thirtyDaysFromNow;
-            }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).slice(0,5);
+            const allFlatJobs = getAllJobsFlat(projects);
 
-            const importantJobs = getAllJobsFlat(projects).filter(job => job.isImportant).sort((a, b) => {
+            const upcomingJobs = allFlatJobs.filter(job => {
+                const endDate = new Date(job.endDate);
+                const now = new Date();
+                const sevenDaysFromNow = new Date();
+                sevenDaysFromNow.setDate(now.getDate() + 7);
+                // Ensure endDate exists, job is not completed, and endDate is in the future but within 7 days
+                return job.endDate && !job.completed && endDate > now && endDate < sevenDaysFromNow;
+            }).sort((a, b) => new Date(a.endDate) - new Date(b.endDate)).slice(0,5); // Sort by end date
+
+            const importantJobs = allFlatJobs.filter(job => job.isImportant).sort((a, b) => {
                 if (a.startDate && b.startDate) {
-                    return new Date(a.startDate) - new Date(b.endDate);
+                    return new Date(a.startDate) - new Date(b.startDate);
                 }
                 return 0;
             });
 
             const topImportantJobs = importantJobs.slice(0, 5);
 
+            // NEW: Overdue Jobs
+            const overdueJobs = allFlatJobs.filter(job => {
+                const endDate = new Date(job.endDate);
+                const now = new Date();
+                // Job must have an endDate, not be completed, and its endDate must be in the past
+                return job.endDate && !job.completed && endDate < now;
+            }).sort((a, b) => new Date(a.endDate) - new Date(b.endDate)).slice(0,5); // Sort by end date (earliest first)
+
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-8 font-inter">
-                    <h1 className="text-5xl font-extrabold text-center text-indigo-800 mb-4 tracking-tight animate-fade-in-down">
+                <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-4 font-inter"> {/* Reduced overall padding */}
+                    <h1 className="text-5xl font-extrabold text-center text-indigo-800 mb-2 tracking-tight animate-fade-in-down">
                         TrackPro - Project Tracker
                     </h1>
-                    <p className="text-center text-lg text-gray-600 mb-6 max-w-2xl mx-auto animate-fade-in">
+                    <p className="text-center text-lg text-gray-600 mb-3 max-w-2xl mx-auto animate-fade-in">
                         Organize your tasks efficiently with a clear, hierarchy. Create projects, break them down into sub-jobs, track timeframes, and mark completion with ease. Your progress is saved automatically to your browser's local storage!
                     </p>
-                    <div className="text-center mb-6 text-red-700 font-bold text-lg">
+                    <div className="text-center mb-1 text-red-700 font-bold text-lg">
                         NOTE: File attachments are NOT supported in this local-storage version.
                     </div>
-                    <div className="text-center mb-6 text-gray-700 animate-fade-in-up">
+                    <div className="text-center mb-1 text-gray-700 animate-fade-in-up">
                         Website by <span className="font-semibold text-indigo-700">Bhaskar KC</span> (<a href="mailto:vaskardata@gmail.com" className="text-blue-600 hover:underline">vaskardata@gmail.com</a>)
                     </div>
 
-                    <div className="text-center mb-6 text-gray-700">
+                    <div className="text-center mb-1 text-gray-700">
                         Your Local User ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded-md text-sm">{userId}</span>
                     </div>
 
-                    <div className="flex justify-center mb-8 items-center flex-wrap gap-4 p-4 bg-white rounded-lg shadow-md animate-fade-in">
+                    <div className="flex justify-center mb-3 items-center flex-wrap gap-4 p-2 bg-white rounded-lg shadow-md animate-fade-in">
                         <label htmlFor="launch-datetime" className="text-gray-700 font-medium">Date/Time:</label>
                         <input
                             type="datetime-local"
@@ -1192,18 +1344,19 @@
                                 setLaunchDateTime(e.target.value);
                                 updateLaunchDateTime(e.target.value);
                             }}
-                            className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base flex-grow sm:flex-grow-0"
+                            className="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-base flex-grow sm:flex-grow-0"
+                            title="Use the calendar picker for date selection or type carefully (e.g., '2025-01-01T10:00')"
                         />
                     </div>
 
-                    <div className="flex justify-center mb-8 flex-wrap gap-4">
+                    <div className="flex justify-center mb-4 flex-wrap gap-4">
                         <input
                             type="text"
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addProject()}
                             placeholder="New Project Name"
-                            className="w-full max-w-lg p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
+                            className="w-full max-w-lg p-3 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
                         />
                         <button
                             onClick={addProject}
@@ -1214,7 +1367,7 @@
                     </div>
 
                     {/* Export/Import Buttons */}
-                    <div className="flex justify-center mb-8 flex-wrap gap-4">
+                    <div className="flex justify-center mb-4 flex-wrap gap-4">
                         <button
                             onClick={exportData}
                             className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors transform hover:scale-105 active:scale-95 button-fancy"
@@ -1236,34 +1389,49 @@
                         </button>
                     </div>
 
-
-                    {/* Top Upcoming Jobs Section */}
-                    {upcomingJobs.length > 0 && (
-                        <div className="mb-8 p-6 bg-yellow-50 rounded-xl shadow-lg">
-                            <h2 className="text-3xl font-bold text-yellow-800 mb-4 text-center">Top Upcoming Jobs</h2>
-                            <p className="text-center text-yellow-700 mb-4">Tasks Due date soon (within the next 7 days) that are not yet completed.</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {upcomingJobs.map(job => (
-                                    <SimpleJobItem key={job.id} job={job} />
-                                ))}
+                    {/* All main/sub headings are wrapped in a div with ml-4 for indentation */}
+                    <div className="max-w-5xl mx-auto px-4"> {/* Centralized and added horizontal padding */}
+                        {/* Top Upcoming Jobs Section */}
+                        {upcomingJobs.length > 0 && (
+                            <div className="mb-8 p-6 bg-yellow-50 rounded-xl shadow-lg">
+                                <h2 className="text-3xl font-bold text-yellow-800 mb-4 text-center">Top Upcoming Jobs</h2>
+                                <p className="text-center text-yellow-700 mb-4">Tasks due in the next 7 days that are not yet completed.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {upcomingJobs.map(job => (
+                                        <SimpleJobItem key={job.id} job={job} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Top Important Jobs Section (first 5 important jobs) */}
-                    {topImportantJobs.length > 0 && (
-                        <div className="mb-8 p-6 bg-pink-50 rounded-xl shadow-lg">
-                            <h2 className="text-3xl font-bold text-pink-800 mb-4 text-center">Top Important Jobs</h2>
-                            <p className="text-center text-pink-700 mb-4">The top 5 most important tasks based on their start date.</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {topImportantJobs.map(job => (
-                                    <SimpleJobItem key={job.id} job={job} />
-                                ))}
+                        {/* NEW: Overdue Jobs Section */}
+                        {overdueJobs.length > 0 && (
+                            <div className="mb-8 p-6 bg-red-50 rounded-xl shadow-lg">
+                                <h2 className="text-3xl font-bold text-red-800 mb-4 text-center">Overdue Jobs</h2>
+                                <p className="text-center text-red-700 mb-4">Tasks whose deadlines have passed and are not yet completed.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {overdueJobs.map(job => (
+                                        <SimpleJobItem key={job.id} job={job} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div className="flex flex-wrap justify-center items-start gap-6">
+                        {/* Top Important Jobs Section (first 5 important jobs) */}
+                        {topImportantJobs.length > 0 && (
+                            <div className="mb-8 p-6 bg-pink-50 rounded-xl shadow-lg">
+                                <h2 className="text-3xl font-bold text-pink-800 mb-4 text-center">Top Important Jobs</h2>
+                                <p className="text-center text-pink-700 mb-4">The top 5 most important tasks based on their start date.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {topImportantJobs.map(job => (
+                                        <SimpleJobItem key={job.id} job={job} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div> {/* End of indentation wrapper for main/sub headings */}
+
+                    <div className="flex flex-wrap justify-center items-start gap-6 max-w-5xl mx-auto">
                         {projects.length === 0 ? (
                             <p className="text-center text-gray-600 text-lg mt-10 w-full animate-fade-in">No projects yet. Add one above!</p>
                         ) : (
@@ -1277,6 +1445,8 @@
                                     deleteJob={deleteJob}
                                     moveJobUp={moveJobUp} // Pass reordering functions
                                     moveJobDown={moveJobDown} // Pass reordering functions
+                                    duplicateProject={duplicateProject} // Pass duplicate project function
+                                    duplicateJob={duplicateJob} // Pass the duplicateJob function down
                                 />
                             ))
                         )}
@@ -1300,7 +1470,7 @@
                                     <button
                                         onClick={handleConfirm}
                                         className="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors transform hover:scale-105 active:scale-95"
-                                    >
+                                >
                                         Delete
                                     </button>
                                 </div>
@@ -1319,10 +1489,10 @@
             // Initialize default credentials in localStorage if they don't exist
             useEffect(() => {
                 if (!localStorage.getItem('trackpro_username')) {
-                    localStorage.setItem('trackpro_username', 'user');
+                    localStorage.setItem('trackpro_username', 'bhkc');
                 }
                 if (!localStorage.getItem('trackpro_password')) {
-                    localStorage.setItem('trackpro_password', '1234');
+                    localStorage.setItem('trackpro_password', '2163');
                 }
 
                 const storedLoginStatus = sessionStorage.getItem('trackproLoggedIn');
