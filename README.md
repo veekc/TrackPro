@@ -1,11 +1,8 @@
-![image](https://github.com/user-attachments/assets/d495769f-3655-4625-8aa1-95641a13ac9e)# TrackPro.exe
+TrackPro.exe
 TrackPro - Project Tracker Organize your tasks efficiently with a clear, hierarchy. Create projects, break them down into sub-jobs, track timeframes, and mark completion with ease. Your progress is saved automatically to your browser's local storage!
-
-
 
 LINK FOR DOWNLOAD EXE FILE:
 https://texastechuniversity-my.sharepoint.com/:u:/g/personal/bhkc_ttu_edu/EcChS0yvkoxAtQ_KdxNP5asB58G0_8bE38_YmjCUUkNdMw?e=1Kd01s
-
 
 
 ![image](https://github.com/user-attachments/assets/437921b3-a971-440e-ba2b-87b7475d1893)
